@@ -19,7 +19,7 @@ end
 class NoTax < SalesTax
 
 	def initialize(price)
-		@tax_rate = 0
+		@tax_rate = 0.00
 		@price = price
 	end
 
@@ -66,6 +66,7 @@ puts "Sales Taxes: #{basket_a_tax}"
 puts "Total: #{basket_a_total}"
 =end
 
+=begin
 i = 0
 
 puts "How many items are in your basket?"
@@ -75,10 +76,11 @@ prices = []
 total_sales_tax = 0
 total_price = 0
 
-until i == num.to_i
+until i == num.to_f
 	i += 1
 	puts "What is the name of your item?"
 	item = gets.chomp
+	item.upcase!
 	items << item
 	
 	puts "What is the price?"
@@ -86,30 +88,32 @@ until i == num.to_i
 	
 	puts "Does this item require sales tax?"
 	is_salestax = gets.chomp
+	is_salestax.downcase!
 
 	puts "Is this item imported?"
-	is_imported = gets.chomp	
+	is_imported = gets.chomp
+	is_imported.downcase!	
 
 		if is_salestax == "yes" && is_imported == "yes"
-			new_item = ImportedSalesTax.new(price.to_i)
+			new_item = ImportedSalesTax.new(price.to_f)
 			total_sales_tax += new_item.calculate_sales_tax
 			prices << new_item.calculate_total
 			total_price += new_item.calculate_total	
 		
 		elsif is_salestax == "yes" && is_imported == "no"
-			new_item = SalesTax.new(price.to_i)
+			new_item = SalesTax.new(price.to_f)
 			total_sales_tax += new_item.calculate_sales_tax
 			prices << new_item.calculate_total	
 			total_price += new_item.calculate_total
 
 		elsif is_salestax == "no" && is_imported == "yes"
-			new_item = ImportedNoTax.new(price.to_i)
+			new_item = ImportedNoTax.new(price.to_f)
 			total_sales_tax += new_item.calculate_sales_tax
 			prices << new_item.calculate_total	
 			total_price += new_item.calculate_total
 
 		elsif is_salestax == "no" && is_imported == "no" 
-			new_item = NoTax.new(price.to_i)
+			new_item = NoTax.new(price.to_f)
 			total_sales_tax += new_item.calculate_sales_tax
 			prices << new_item.calculate_total	
 			total_price += new_item.calculate_total
@@ -122,10 +126,108 @@ puts ""
 i=0
 until i == num.to_i
 	i += 1
-	puts "#{items[i-1]}: #{prices[i-1]}"
+	puts "#{items[i-1]}: $#{prices[i-1].round(2)}" 
 end
 
 puts ""
 puts "------------------"
-puts "Total Sales Tax: #{total_sales_tax}"
-puts "Total Price: #{total_price}"
+puts "Total Sales Tax: $#{total_sales_tax.round(2)}"
+puts "Total Price: $#{total_price.round(2)}"
+
+=end
+
+$tax_total = 0
+$price_total = 0
+
+
+class Receipt
+	attr_accessor :perfume_choose
+
+	def initialize(item)
+		@item = item
+	end
+
+	def item_select
+		if @item.include? "chocolate"
+
+			if @item.include? "imported"
+				puts "Would you like the imported chocolate listed at 10.00 or 11.25?"
+				@chocolate_choice = gets.chomp
+
+				@item_tax = ImportedNoTax.new(@chocolate_choice.to_f)
+				puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+				$tax_total += @item_tax.calculate_sales_tax.round(2)
+				$price_total += @item_tax.calculate_total.round(2)
+			else
+				@item_tax = NoTax.new(0.85)
+				puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+				$tax_total += @item_tax.calculate_sales_tax.round(2)
+				$price_total += @item_tax.calculate_total.round(2)
+			end
+
+		elsif @item.include? "book"
+			@item_tax = SalesTax.new(12.49)
+			puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+			$tax_total += @item_tax.calculate_sales_tax.round(2)
+			$price_total += @item_tax.calculate_total.round(2)
+
+		elsif (@item.include? "music") || (@item.include? "cd")
+			@item_tax = SalesTax.new(14.99)
+			puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+			$tax_total += @item_tax.calculate_sales_tax.round(2)
+			$price_total += @item_tax.calculate_total.round(2)
+
+		elsif @item.include? "perfume"
+			if @item.include? "imported"
+
+				puts "Would you like the imported perfume listed at 27.99 or 47.50?"
+				@perfume_choose = gets.chomp
+
+				@item_tax = ImportedSalesTax.new(perfume_choose.to_f)
+				puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+				$tax_total += @item_tax.calculate_sales_tax.round(2)
+				$price_total += @item_tax.calculate_total.round(2)
+				
+			else
+				@item_tax = SalesTax.new(18.99)
+				puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+				$tax_total += @item_tax.calculate_sales_tax.round(2)
+				$price_total += @item_tax.calculate_total.round(2)
+			end
+
+		elsif (@item.include? "headache") || (@item.include? "pills")
+				@item_tax = NoTax.new(9.75)
+				puts "#{@item.upcase}: #{@item_tax.calculate_total.round(2)}"
+				$tax_total += @item_tax.calculate_sales_tax.round(2)
+				$price_total += @item_tax.calculate_total.round(2)
+		elsif @item == "done"
+			puts ""
+		else
+			puts "Sorry, I don't recognize that item!  Why don't you try another?"		
+
+		end
+	end
+
+end
+
+
+
+done = false
+until done == true
+	puts ""
+	puts "Please enter grocery item (or type 'done' to exit):"
+	item = gets.chomp
+	
+	if item == "done" 
+		done = true
+	end
+
+
+	testy = Receipt.new(item)
+	testy.item_select
+end
+
+puts "------------"
+puts "TOTAL TAX: #{$tax_total.round(2)}"
+puts "TOTAL AMOUNT: #{$price_total.round(2)}"
+
